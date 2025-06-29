@@ -23,17 +23,16 @@ struct HomeView: View {
                 ForEach(homeViewModel.sections, id: \.id) { section in
                     sectionHeaderRendererRegistry.view(section: section)
                     sectionRendererRegistry.view(for: section)
-                        .listRowBackground(Color.clear)
                 }
             }
-            .listStyle(.plain)
             .listRowSeparator(.hidden)
+            .listStyle(.plain)
         }
         .onAppear {
             homeViewModel.fetchData()
         }
         .sheet(isPresented: $isPresenting, content: {
-            /// Open search view
+            SearchScreen()
         })
     }
 }
