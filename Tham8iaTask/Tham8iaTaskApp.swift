@@ -11,7 +11,7 @@ import SwiftUI
 struct Tham8iaTaskApp: App {
     var body: some Scene {
         WindowGroup {
-            Text("Dummy")
+            HomeView()
         }
     }
 }
