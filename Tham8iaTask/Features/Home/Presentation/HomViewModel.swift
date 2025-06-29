@@ -5,99 +5,151 @@
 //  Created by Khaled Kamal on 29/06/2025.
 //
 
+import Combine
 import Foundation
 
 final class HomeViewModel: ObservableObject {
-    var logger: ErrorLoggerProtocol = ErrorLogger.shared
+    // MARK: - Dependencies
 
-    @Published var paginationStatus: PaginationStatus = .idle
-    @Published var listState: ViewState<[SectionContent]> = .idle
-
-    private var sections: [SectionContent] = []
-    private var lastSeenSection: SectionContent? = nil
-    private var currentPage = 1
-    private var pageSize = 10
-    private var totalPages = 0
-    private var canLoadMore = true
-
+    private let logger: ErrorLoggerProtocol
     private let useCase: HomeUseCaseProtocol
 
-    init(useCase: HomeUseCaseProtocol = HomeUseCase()) {
+    // MARK: - Published Properties
+
+    @Published private(set) var listState: ViewState<[SectionContent]> = .idle
+    @Published private(set) var paginationStatus: PaginationStatus = .idle
+
+    // MARK: - Private State
+
+    private var sections: [SectionContent] = []
+    private var lastSeenSection: SectionContent?
+    private var paginationInfo = PaginationInfo()
+
+    // MARK: - Task Management
+
+    private var fetchTask: Task<Void, Never>?
+    private var loadMoreTask: Task<Void, Never>?
+
+    // MARK: - Initialization
+
+    init(
+        useCase: HomeUseCaseProtocol = HomeUseCase(),
+        logger: ErrorLoggerProtocol = ErrorLogger.shared
+    ) {
         self.useCase = useCase
+        self.logger = logger
     }
 
+    deinit {
+        cancelAllTasks()
+    }
+}
+
+// MARK: - Public Interface
+
+extension HomeViewModel {
     func fetchData() {
-        listState = .loading
-        canLoadMore = false
-        // Reset pagination state for fresh data fetch
-        currentPage = 1
-        sections = []
+        cancelAllTasks()
+        resetState()
 
-        Task {
-            do {
-                let homeData = try await self.useCase.fetchHome(for: currentPage)
-                let uiSections = (homeData.sections ?? []).map {
-                    $0.mapToPresentationModel()
-                }
-                let totalPages = homeData.pagination?.totalPages ?? 0
+        fetchTask = Task { @MainActor in
+            await performFetch(isRefresh: true)
+        }
+    }
 
-                await MainActor.run {
-                    listState = uiSections.isEmpty ? .empty(.default()) : .loaded(uiSections)
-                    paginationStatus = currentPage >= totalPages ? .endReached : .idle
-                    self.sections = uiSections
-                    self.totalPages = totalPages
-                    canLoadMore = true
-                }
+    func loadNextPage(for section: SectionContent) {
+        guard shouldLoadMore(for: section) else { return }
 
-            } catch {
-                logger.log(error: "\(#function) Error:" + error.localizedDescription)
-                await MainActor.run {
-                    listState = .error(error.localizedDescription)
-                    canLoadMore = true // Reset canLoadMore on error
-                }
-            }
+        loadMoreTask = Task { @MainActor in
+            await performFetch(isRefresh: false)
         }
     }
 
     func updateLastSeenSection(_ section: SectionContent) {
         lastSeenSection = section
     }
+}
 
-    func loadNextPage(afterSection section: SectionContent) {
+// MARK: - Private Methods
+
+private extension HomeViewModel {
+    func resetState() {
+        // Keep existing data visible during refresh
+        if case .loaded = listState {
+            // Don't change listState to .loading to keep data visible
+        } else {
+            listState = .loading
+        }
+        paginationStatus = .idle
+        // Don't clear sections - keep them for pull-to-refresh UX
+        paginationInfo.reset()
+    }
+
+    func shouldLoadMore(for section: SectionContent) -> Bool {
         guard sections.last?.id == section.id,
               paginationStatus == .idle,
-              canLoadMore
+              paginationInfo.canLoadMore
         else {
-            return
+            return false
+        }
+        return true
+    }
+
+    func cancelAllTasks() {
+        fetchTask?.cancel()
+        loadMoreTask?.cancel()
+    }
+
+    @MainActor
+    func performFetch(isRefresh: Bool) async {
+        let targetPage = isRefresh ? 1 : paginationInfo.nextPage
+
+        if !isRefresh {
+            paginationStatus = .loading
         }
 
-        paginationStatus = .loading
-
-        Task {
-            do {
-                let nextPage = currentPage + 1
-                let nextData = try await useCase.fetchHome(for: nextPage)
-
-                let newSections = (nextData.sections ?? []).map {
-                    $0.mapToPresentationModel()
-                }
-
-                await MainActor.run {
-                    let totalUISections = sections + newSections
-                    self.sections = totalUISections
-                    self.listState = .loaded(totalUISections)
-                    self.currentPage = nextPage
-                    self.totalPages = nextData.pagination?.totalPages ?? 0
-                    paginationStatus = currentPage >= totalPages ? .endReached : .idle
-                }
-
-            } catch {
-                logger.log(error: "\(#function) Error:" + error.localizedDescription)
-
-                await MainActor.run {
-                    paginationStatus = .error("Failed to load next page")
-                }
-            }
+        do {
+            let homeData = try await useCase.fetchHome(for: targetPage)
+            handleFetchSuccess(homeData, isRefresh: isRefresh)
+        } catch {
+            handleFetchError(error, isRefresh: isRefresh)
         }
+    }
+
+    @MainActor
+    func handleFetchSuccess(_ homeData: HomeDTO, isRefresh: Bool) {
+        let newSections = homeData.sections?.compactMap { $0.mapToPresentationModel() } ?? []
+
+        if isRefresh {
+            // Replace sections with fresh data for refresh
+            sections = newSections
+        } else {
+            // Append for pagination
+            sections.append(contentsOf: newSections)
+        }
+
+        paginationInfo.update(
+            currentPage: isRefresh ? 1 : paginationInfo.nextPage,
+            totalPages: homeData.pagination?.totalPages ?? 0
+        )
+
+        updateUIState()
+    }
+
+    @MainActor
+    func handleFetchError(_ error: Error, isRefresh: Bool) {
+        logger.log(error: "\(#function) Error: \(error.localizedDescription)")
+
+        if isRefresh {
+            listState = .error(error.localizedDescription)
+        } else {
+            paginationStatus = .error("Failed to load next page")
+        }
+    }
+
+    @MainActor
+    func updateUIState() {
+        listState = sections.isEmpty ? .empty(.default()) : .loaded(sections)
+        paginationStatus = paginationInfo.hasReachedEnd ? .endReached : .idle
     }
 }

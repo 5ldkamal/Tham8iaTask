@@ -53,7 +53,7 @@ struct HomeScreen: View {
                         sectionHeaderRendererRegistry.view(section: section)
                         sectionRendererRegistry.view(for: section)
                             .onAppear {
-                                homeViewModel.loadNextPage(afterSection: section)
+                                homeViewModel.loadNextPage(for: section)
                             }
                     }
                 }
