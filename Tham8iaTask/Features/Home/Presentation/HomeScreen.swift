@@ -52,6 +52,9 @@ struct HomeScreen: View {
                     ForEach(items, id: \.id) { section in
                         sectionHeaderRendererRegistry.view(section: section)
                         sectionRendererRegistry.view(for: section)
+                            .onAppear {
+                                homeViewModel.loadNextPage(afterSection: section)
+                            }
                     }
                 }
                 .listRowSeparator(.hidden)

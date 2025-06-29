@@ -8,14 +8,14 @@
 import Foundation
 
 protocol HomeUseCaseProtocol {
-    func fetchHome() async throws -> HomeDTO
+    func fetchHome(for page: Int) async throws -> HomeDTO
 }
 
 struct HomeUseCase: HomeUseCaseProtocol {
     var network: RequestAction = URLSession.shared
 
-    func fetchHome() async throws -> HomeDTO {
-        return try await network.requestAsync(for: HomeEndpoint(),
+    func fetchHome(for page: Int) async throws -> HomeDTO {
+        return try await network.requestAsync(for: HomeEndpoint(page: page),
                                               decoder: .init(),
                                               responseValidation: HttpResponseValidator())
     }
@@ -25,6 +25,10 @@ struct HomeUseCase: HomeUseCaseProtocol {
 
 extension HomeUseCase {
     private struct HomeEndpoint: EndPoint {
+        let page: Int
         var urlPath: String { "home_sections" }
+        var parameter: Parameters? {
+            return ["page": page]
+        }
     }
 }
