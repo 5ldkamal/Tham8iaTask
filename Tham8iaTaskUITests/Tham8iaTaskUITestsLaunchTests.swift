@@ -8,7 +8,6 @@
 import XCTest
 
 final class Tham8iaTaskUITestsLaunchTests: XCTestCase {
-
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
