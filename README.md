@@ -1,10 +1,8 @@
-
-```markdown:README.md
 # Tham8iaTask - iOS Audio Content App
 
 A modern iOS application built with SwiftUI that displays and manages audio content including podcasts, episodes, audiobooks, and audio articles. The app features a clean, modular architecture following Clean Architecture principles.
 
-## �� Features
+## 🎵 Features
 
 - **Home Screen**: Displays various audio content sections with different layouts
 - **Search Functionality**: Search through audio content with real-time filtering
@@ -14,7 +12,7 @@ A modern iOS application built with SwiftUI that displays and manages audio cont
 - **Error Handling**: Comprehensive error states and empty states
 - **Async Image Loading**: Efficient image loading with placeholders
 
-## ��️ Architecture
+## 🏗️ Architecture
 
 The project follows **Clean Architecture** principles with a clear separation of concerns:
 
@@ -66,7 +64,7 @@ Each feature follows the same structure:
 - **Layout Types**: Square, Big Square, Two Lines Grid, Queue
 - **Content Types**: Podcast, Episode, AudioBook, AudioArticle
 
-## �� UI Components
+## 🎨 UI Components
 
 ### Reusable Components
 - **AsyncImageView**: Asynchronous image loading with placeholders
@@ -185,5 +183,4 @@ This project is created by Khaled Kamal.
 
 ---
 
-**Note**: This is a task/project implementation showcasing modern iOS development practices with SwiftUI and Clean Architecture.
-```
+**Note**: This is a task/project implementation showcasing modern iOS development practices with SwiftUI and Clean Architecture. 
