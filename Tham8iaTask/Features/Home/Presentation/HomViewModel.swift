@@ -12,6 +12,8 @@ final class HomeViewModel: ObservableObject {
 
     @Published var sections: [SectionContent] = []
 
+    @Published var listState: ViewState<[SectionContent]> = .idle
+
     private let useCase: HomeUseCaseProtocol
 
     init(useCase: HomeUseCaseProtocol = HomeUseCase()) {
@@ -19,6 +21,8 @@ final class HomeViewModel: ObservableObject {
     }
 
     func fetchData() {
+        listState = .loading
+
         Task {
             do {
                 let uiSections = try await (self.useCase.fetchHome().sections ?? []).map {
@@ -26,11 +30,14 @@ final class HomeViewModel: ObservableObject {
                 }
 
                 await MainActor.run {
-                    sections = uiSections
+                    listState = uiSections.isEmpty ? .empty(.default()) : .loaded(uiSections)
                 }
 
             } catch {
                 logger.log(error: "\(#function) Error:" + error.localizedDescription)
+                await MainActor.run {
+                    listState = .error(error.localizedDescription)
+                }
             }
         }
     }

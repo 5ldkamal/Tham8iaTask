@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct HomeView: View {
+struct HomeScreen: View {
     @StateObject var homeViewModel = HomeViewModel()
     @State private var isPresenting = false
 
@@ -16,23 +16,47 @@ struct HomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HomeHeaderView {
-                isPresenting.toggle()
-            }
-            List {
-                ForEach(homeViewModel.sections, id: \.id) { section in
-                    sectionHeaderRendererRegistry.view(section: section)
-                    sectionRendererRegistry.view(for: section)
-                }
-            }
-            .listRowSeparator(.hidden)
-            .listStyle(.plain)
+            content
         }
         .onAppear {
+            homeViewModel.fetchData()
+        }
+        .refreshable {
             homeViewModel.fetchData()
         }
         .sheet(isPresented: $isPresenting, content: {
             SearchScreen()
         })
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch homeViewModel.listState {
+        case .idle, .loading:
+            ProgressView("Loading...")
+                .progressViewStyle(CircularProgressViewStyle())
+                .foregroundStyle(Color.primaryFont)
+        case let .error(message):
+            ErrorView(message: message) {
+                homeViewModel.fetchData()
+            }
+        case let .empty(model):
+            EmptyStateView(emptyModel: model)
+        case let .loaded(items):
+            VStack(spacing: 0) {
+                HomeHeaderView {
+                    isPresenting.toggle()
+                }
+
+                List {
+                    ForEach(items, id: \.id) { section in
+                        sectionHeaderRendererRegistry.view(section: section)
+                        sectionRendererRegistry.view(for: section)
+                    }
+                }
+                .listRowSeparator(.hidden)
+                .listStyle(.plain)
+            }
+        }
     }
 }
