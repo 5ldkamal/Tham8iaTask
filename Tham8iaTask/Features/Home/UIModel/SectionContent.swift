@@ -35,7 +35,7 @@ struct SectionHeaderContent {
 
 enum SectionLayoutType: String {
     case square
-    case bigSquare = "big_square"
+    case bigSquare = "big square"
     case twoLinesGrid = "2_lines_grid"
     case queue
     case unknown
@@ -44,7 +44,23 @@ enum SectionLayoutType: String {
         guard let rawValue = rawValue else {
             return nil
         }
-        self.init(rawValue: rawValue)
+
+        let normalized = rawValue
+            .replacingOccurrences(of: "_", with: " ")
+            .lowercased()
+
+        switch normalized {
+        case "square":
+            self = .square
+        case "big square":
+            self = .bigSquare
+        case "2 lines grid":
+            self = .twoLinesGrid
+        case "queue":
+            self = .queue
+        default:
+            self = .unknown
+        }
     }
 }
 
@@ -99,6 +115,7 @@ struct EpisodeContent: SectionItemContent {
     let score: Double
     var onTappedHandler: (() -> Void)?
     var onManuHandler: (() -> Void)?
+    var onPlayerHandler: (() -> Void)?
 }
 
 struct AudioBookContent: SectionItemContent {

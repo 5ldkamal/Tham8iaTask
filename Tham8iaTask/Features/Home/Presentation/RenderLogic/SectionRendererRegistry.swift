@@ -35,14 +35,19 @@ extension SectionRendererRegistry {
     static func `default`() -> SectionRendererRegistry {
         let registry = SectionRendererRegistry()
 
+        // BigSquare
         registry.register(layout: .bigSquare, content: .audioBook, renderer: BigSquareAudioBookSectionRender())
+        registry.register(layout: .bigSquare, content: .episode, renderer: BigSquareEpisodeSectionRender())
 
+        // Square
         registry.register(layout: .square, content: .audioArticle, renderer: SquareAudioArticleRender())
         registry.register(layout: .square, content: .podcast, renderer: SquarePodcastSectionRender())
 
+        // TwoLinesGrid
         registry.register(layout: .twoLinesGrid, content: .audioBook, renderer: TwoLineGridAudioBookSectionRender())
         registry.register(layout: .twoLinesGrid, content: .episode, renderer: TwoLineGridEpisodeSectionRender())
 
+        // Queue
         registry.register(layout: .queue, content: .podcast, renderer: QueuePodcastSectionRender())
 
         return registry
