@@ -60,7 +60,7 @@ private struct SquareAudioArticleItemView: View {
             Text(content.title)
                 .font(.caption)
                 .fontWeight(.bold)
-                .lineLimit(2)
+                .lineLimit(1)
                 .foregroundColor(Color.primaryFont)
 
             HStack {
@@ -74,7 +74,6 @@ private struct SquareAudioArticleItemView: View {
                     .layoutPriority(0)
             }
         }
-        .background(Color.black)
         .onTapGesture {
             content.onPlayerHandler?()
         }

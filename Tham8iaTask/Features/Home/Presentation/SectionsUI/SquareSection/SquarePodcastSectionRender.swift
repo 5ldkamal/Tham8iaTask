@@ -28,7 +28,7 @@ private struct SquarePodcastSectionView: View {
     private let size: CGSize = .init(width: 150, height: 150)
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(alignment: .top) {
+            LazyHStack {
                 ForEach(contents) { content in
                     SquarePodcastItemView(content: content,
                                           imageSize: size)
@@ -60,7 +60,7 @@ struct SquarePodcastItemView: View {
             Text(content.name)
                 .font(.caption)
                 .fontWeight(.bold)
-                .lineLimit(2)
+                .lineLimit(1)
                 .foregroundColor(Color.primaryFont)
 
             HStack {
@@ -69,7 +69,6 @@ struct SquarePodcastItemView: View {
                 Spacer()
             }
         }
-        .background(Color.black)
         .onTapGesture {
             content.onPlayerHandler?()
         }

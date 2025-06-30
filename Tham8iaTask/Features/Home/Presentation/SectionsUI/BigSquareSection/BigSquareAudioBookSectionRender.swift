@@ -53,7 +53,13 @@ private struct BigSquareAudioBookItemView: View {
 
     var body: some View {
         ZStack {
-            AsyncImageView(url: content.imageURL, size: .init(width: size.width * Constants.frameScale, height: size.width * Constants.frameScale - Constants.heightOffset))
+            AsyncImageView(
+                url: content.imageURL,
+                size: .init(
+                    width: size.width * Constants.frameScale,
+                    height: size.width * Constants.frameScale - Constants.heightOffset
+                )
+            )
 
             HStack {
                 VStack {

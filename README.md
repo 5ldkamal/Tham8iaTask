@@ -183,6 +183,23 @@ Each feature follows the same structure:
 - Background color customization
 - Proper state management for search results
 
+## 📸 Screenshots & View Recordings
+
+### Home Screen (Dark Mode)
+[![Home Dark Mode](assets/home_dark_mode.mp4)](assets/home_dark_mode.mp4)
+
+### Home Screen (Light Mode)
+[![Home Light Mode](assets/home_light_mode.mp4)](assets/home_light_mode.mp4)
+
+### Search Screen
+[![Search Screen](assets/search_search.mp4)](assets/search_search.mp4)
+
+### Error State
+![Error State](assets/error_state_erro.png)
+
+### Empty State
+![Empty State](assets/empty_state_empty.png)
+
 ## 🔧 Technical Details
 
 ### Dependencies

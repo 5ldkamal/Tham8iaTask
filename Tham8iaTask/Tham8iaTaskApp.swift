@@ -15,6 +15,7 @@ struct Tham8iaTaskApp: App {
                 Text("Unit Testing is running - Skipping Main App ...")
             } else {
                 HomeScreen()
+                    .preferredColorScheme(.dark)
             }
         }
     }

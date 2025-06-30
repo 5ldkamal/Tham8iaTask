@@ -70,13 +70,13 @@ private struct QueuePodcastItemView: View {
                     .lineLimit(2)
 
                 // Time info
-                HStack(spacing: 4) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text("3 hours ago") // Update this by BE
                     Text(content.duration.formatDuration())
                         .foregroundColor(.red)
                 }
                 .font(.caption)
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primaryFont)
 
                 HStack {
                     Spacer()
@@ -84,9 +84,10 @@ private struct QueuePodcastItemView: View {
                 }.padding(.bottom, 8).padding(.trailing, 8)
             }
         }
-        .background(Color.queueCardBg)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal, 0)
+        .background(Color.primaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding()
+        .shadow(radius: 6)
     }
 }
 
