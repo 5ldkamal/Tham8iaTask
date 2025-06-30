@@ -1,5 +1,5 @@
 //
-//  HomViewModel.swift
+//  HomeViewModel.swift
 //  Tham8iaTask
 //
 //  Created by Khaled Kamal on 29/06/2025.
@@ -48,11 +48,12 @@ final class HomeViewModel: ObservableObject {
 // MARK: - Public Interface
 
 extension HomeViewModel {
-    func fetchData() {
+    func fetchData() async {
         cancelAllTasks()
-        resetState()
 
-        fetchTask = Task { @MainActor in
+        await resetState()
+
+        fetchTask = Task {
             await performFetch(isRefresh: true)
         }
     }
@@ -68,11 +69,18 @@ extension HomeViewModel {
     func updateLastSeenSection(_ section: SectionContent) {
         lastSeenSection = section
     }
+
+    func retry() {
+        Task {
+            await fetchData()
+        }
+    }
 }
 
 // MARK: - Private Methods
 
 private extension HomeViewModel {
+    @MainActor
     func resetState() {
         // Keep existing data visible during refresh
         if case .loaded = listState {
@@ -100,19 +108,19 @@ private extension HomeViewModel {
         loadMoreTask?.cancel()
     }
 
-    @MainActor
     func performFetch(isRefresh: Bool) async {
-        let targetPage = isRefresh ? 1 : paginationInfo.nextPage
-
-        if !isRefresh {
-            paginationStatus = .loading
+        await MainActor.run {
+            if !isRefresh {
+                paginationStatus = .loading
+            }
         }
 
         do {
+            let targetPage = isRefresh ? 1 : paginationInfo.nextPage
             let homeData = try await useCase.fetchHome(for: targetPage)
-            handleFetchSuccess(homeData, isRefresh: isRefresh)
+            await handleFetchSuccess(homeData, isRefresh: isRefresh)
         } catch {
-            handleFetchError(error, isRefresh: isRefresh)
+            await handleFetchError(error, isRefresh: isRefresh)
         }
     }
 

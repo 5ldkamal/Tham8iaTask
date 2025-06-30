@@ -11,7 +11,11 @@ import SwiftUI
 struct Tham8iaTaskApp: App {
     var body: some Scene {
         WindowGroup {
-            HomeScreen()
+            if Testing.isActive {
+                Text("Unit Testing is running - Skipping Main App ...")
+            } else {
+                HomeScreen()
+            }
         }
     }
 }

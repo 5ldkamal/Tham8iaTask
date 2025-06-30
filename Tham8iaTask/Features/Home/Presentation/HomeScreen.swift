@@ -18,11 +18,11 @@ struct HomeScreen: View {
         VStack(spacing: 0) {
             content
         }
-        .onAppear {
-            homeViewModel.fetchData()
+        .task {
+            await homeViewModel.fetchData()
         }
         .refreshable {
-            homeViewModel.fetchData()
+            await homeViewModel.fetchData()
         }
         .sheet(isPresented: $isPresenting, content: {
             SearchScreen()
@@ -38,7 +38,7 @@ struct HomeScreen: View {
                 .foregroundStyle(Color.primaryFont)
         case let .error(message):
             ErrorView(message: message) {
-                homeViewModel.fetchData()
+                homeViewModel.retry()
             }
         case let .empty(model):
             EmptyStateView(emptyModel: model)

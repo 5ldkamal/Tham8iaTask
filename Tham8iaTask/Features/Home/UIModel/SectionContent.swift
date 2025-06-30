@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Section Content
 
-struct SectionContent: Identifiable {
+struct SectionContent: Identifiable, Equatable {
     /*
      We can replace this id be id coming from BE
      */
@@ -18,6 +18,10 @@ struct SectionContent: Identifiable {
     var sectionLayoutType: SectionLayoutType
     var sectionContentItemType: SectionContentItemType
     var items: [any SectionItemContent]
+
+    static func == (lhs: SectionContent, rhs: SectionContent) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 // MARK: - Section Header info
